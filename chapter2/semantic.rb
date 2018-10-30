@@ -119,6 +119,65 @@ class Assign < Struct.new(:name, :expression)
     end
 end
 
+class If < Struct.new(:condition, :consequence, :alternative)
+    def to_s
+        "if #{condition} { #{consequence} } else { #{alternative} }"
+    end
+    def inspect
+        "<#{self}>"
+    end
+    def reducible?
+        true
+    end
+    def reduce(environment)
+        if condition.reducible?
+            [If.new(condition.reduce(environment), consequence, alternative), environment]
+        else
+            case condition
+            when Boolean.new(true)
+                [consequence, environment]
+            when Boolean.new(false)
+                [alternative, environment]
+            end
+        end
+    end
+end
+
+class Sequence < Struct.new(:first, :second)
+    def to_s
+        "#{first}; #{second}"
+    end
+    def inspect
+        "<#{self}>"
+    end
+    def reducible?
+        true
+    end
+    def reduce(environment)
+        if first.reducible?
+            reduced_statement, reduced_environment = first.reduce(environment)
+            [Sequence.new(reduced_statement, second), environment.merge(reduced_environment)]
+        else
+            [second, environment]
+        end
+    end
+end
+
+class While < Struct.new(:condition, :body)
+    def to_s
+        "while (#{condition}) { #{body} }"
+    end
+    def inspect
+        "<#{self}>"
+    end
+    def reducible?
+        true
+    end
+    def reduce(environment)
+        [If.new(condition, Sequence.new(body, self), Noop.new), environment]
+    end
+end
+
 class Noop
     def to_s
         'do-nothing'
@@ -148,9 +207,22 @@ class Machine < Struct.new(:statement, :environment)
     end
 end
 
-expression = Add.new(Multiply.new(Number.new(1), Variable.new(:x)),
-Multiply.new(Number.new(3), Variable.new(:y)))
-environment = {x: Number.new(2), y: Number.new(4)}
-statement = Assign.new(:x, Add.new(Variable.new(:x), Number.new(1)))
+# expression = Add.new(Multiply.new(Variable.new(:x), Number.new(1)),
+# Multiply.new(Number.new(3), Variable.new(:y)))
+
+# environment = {x: Number.new(1), y: Number.new(4)}
+# statement = Assign.new(:x, Add.new(Variable.new(:x), Number.new(1)))
+
+# environment = {}
+# statement = Sequence.new(Assign.new(:x, Add.new(Number.new(1), Number.new(1))),
+# Assign.new(:y, Add.new(Variable.new(:x), Number.new(3))))
+
+# environment = {x: Boolean.new(1)}
+# statement = If.new(LessThan.new(Variable.new(:x), Number.new(2)), Assign.new(:y, Number.new(1)), Assign.new(:y, Number.new(2)))
+
+environment = {x: Number.new(1), y: Number.new(4)}
+statement = While.new(LessThan.new(Variable.new(:x), Number.new(5)),
+Assign.new(:x, Multiply.new(Variable.new(:x), Number.new(3))))
 
 Machine.new(statement, environment).run
+puts(environment)
