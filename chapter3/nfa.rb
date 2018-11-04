@@ -86,8 +86,8 @@ class NFADesign < Struct.new(:start_state, :accept_states, :rulebook)
     end
 end
 
-nfa_design = NFADesign.new(1, [2,4], rulebook)
-puts nfa_design.accepts?('aa') # true
-puts nfa_design.accepts?('aaa') # true
-puts nfa_design.accepts?('aaaaa') # false
-puts nfa_design.accepts?('aaaaaa') # true
+# nfa_design = NFADesign.new(1, [2,4], rulebook)
+# puts nfa_design.accepts?('aa') # true
+# puts nfa_design.accepts?('aaa') # true
+# puts nfa_design.accepts?('aaaaa') # false
+# puts nfa_design.accepts?('aaaaaa') # true
