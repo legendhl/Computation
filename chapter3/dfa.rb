@@ -1,16 +1,4 @@
-class FARule < Struct.new(:state, :character, :next_state)
-    def applies_to?(state, character)
-        self.state == state && self.character == character
-    end
-
-    def follow
-        next_state
-    end
-
-    def inspect
-        "#<FARule #{state.inspect} --#{character}--> #{next_state.inspect}>"
-    end
-end
+require_relative 'fa_rule'
 
 class DFARuleBook < Struct.new(:rules)
     def next_state(state, character)
@@ -21,16 +9,6 @@ class DFARuleBook < Struct.new(:rules)
         rules.detect { |rule| rule.applies_to?(state, character) }
     end
 end
-
-rulebook = DFARuleBook.new([
-    FARule.new(1, 'a', 2), FARule.new(1, 'b', 1),
-    FARule.new(2, 'a', 2), FARule.new(2, 'b', 3),
-    FARule.new(3, 'a', 3), FARule.new(3, 'b', 3),
-])
-
-# puts rulebook.next_state(1, 'a') # 2
-# puts rulebook.next_state(1, 'b') # 1
-# puts rulebook.next_state(2, 'b') # 3
 
 class DFA < Struct.new(:current_state, :accept_states, :rulebook)
     def accepting?
@@ -46,14 +24,6 @@ class DFA < Struct.new(:current_state, :accept_states, :rulebook)
     end
 end
 
-# dfa = DFA.new(1, [3], rulebook)
-# dfa.read_string('ab')
-# puts dfa.accepting?
-
-# dfa = DFA.new(1, [3], rulebook)
-# dfa.read_string('aaa')
-# puts dfa.accepting?
-
 class DFADesign < Struct.new(:start_state, :accept_states, :rulebook)
     def to_dfa
         DFA.new(start_state, accept_states, rulebook)
@@ -64,6 +34,24 @@ class DFADesign < Struct.new(:start_state, :accept_states, :rulebook)
     end
 end
 
-dfaDesign = DFADesign.new(1, [3], rulebook)
-puts dfaDesign.accepts?('ab')
-puts dfaDesign.accepts?('aaa')
+# rulebook = DFARuleBook.new([
+#     FARule.new(1, 'a', 2), FARule.new(1, 'b', 1),
+#     FARule.new(2, 'a', 2), FARule.new(2, 'b', 3),
+#     FARule.new(3, 'a', 3), FARule.new(3, 'b', 3),
+# ])
+
+# puts rulebook.next_state(1, 'a') # 2
+# puts rulebook.next_state(1, 'b') # 1
+# puts rulebook.next_state(2, 'b') # 3
+
+# dfa = DFA.new(1, [3], rulebook)
+# dfa.read_string('ab')
+# puts dfa.accepting?
+
+# dfa = DFA.new(1, [3], rulebook)
+# dfa.read_string('aaa')
+# puts dfa.accepting?
+
+# dfaDesign = DFADesign.new(1, [3], rulebook)
+# puts dfaDesign.accepts?('ab')
+# puts dfaDesign.accepts?('aaa')
